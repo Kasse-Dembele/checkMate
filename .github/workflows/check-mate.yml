@@ -1,0 +1,31 @@
+name: PR Checklist Bot
+
+on:
+  pull_request:
+    types:
+      - opened
+      - edited
+      - review_requested
+
+jobs:
+  post-checklist:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
+      - name: Run PR Checklist Bot
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python .github/scripts/pr_checkmate_bot.py
