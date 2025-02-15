@@ -4,8 +4,16 @@ import requests
 # GitHub API details
 GITHUB_API_URL = "https://api.github.com"
 REPO = os.getenv("GITHUB_REPOSITORY")  # e.g., "owner/repo"
-PR_NUMBER = os.getenv("GITHUB_REF").split("/")[-2]  # Extract PR number from ref
+# Extract PR number from ref, assuming format "refs/pull/<PR_NUMBER>/merge"
+try:
+    PR_NUMBER = os.getenv("GITHUB_REF").split("/")[2]
+except Exception as e:
+    print(f"[ERROR] Failed to extract PR number: {e}")
+    PR_NUMBER = None
+
+
 GITHUB_TOKEN = os.getenv("INPUT_GITHUB_TOKEN")
+
 
 # Checklist template
 CHECKLIST = """
@@ -28,6 +36,10 @@ CHECKLIST = """
 
 def get_pr_details():
     """Fetch PR details to get the list of reviewers."""
+    if not PR_NUMBER:
+        print("[ERROR] PR_NUMBER is not defined.")
+        return None
+
     url = f"{GITHUB_API_URL}/repos/{REPO}/pulls/{PR_NUMBER}"
     headers = {
         "Authorization": f"Bearer {GITHUB_TOKEN}",
@@ -37,11 +49,15 @@ def get_pr_details():
     if response.status_code == 200:
         return response.json()
     else:
-        print(f"Failed to fetch PR details: {response.status_code}")
+        print(f"[ERROR] Failed to fetch PR details: {response.status_code} {response.text}")
         return None
 
 def post_comment(reviewer):
     """Post the checklist comment and tag the reviewer."""
+    if not PR_NUMBER:
+        print("[ERROR] PR_NUMBER is not defined.")
+        return
+
     url = f"{GITHUB_API_URL}/repos/{REPO}/issues/{PR_NUMBER}/comments"
     headers = {
         "Authorization": f"Bearer {GITHUB_TOKEN}",
@@ -51,16 +67,18 @@ def post_comment(reviewer):
     data = {"body": body}
     response = requests.post(url, headers=headers, json=data)
     if response.status_code == 201:
-        print(f"Checklist posted for reviewer: {reviewer}")
+        print(f"[SUCCESS] Checklist posted for reviewer: {reviewer}")
     else:
-        print(f"Failed to post comment: {response.status_code}")
+        print(f"[ERROR] Failed to post comment: {response.status_code} {response.text}")
 
 def main():
     pr_details = get_pr_details()
     if pr_details:
-        reviewers = pr_details.get("requested_reviewers", [])
-        for reviewer in reviewers:
-            post_comment(reviewer["login"])
+        #reviewers = pr_details.get("requested_reviewers", [])
+        #if not reviewers:
+            #print("[INFO] No reviewers found.")
+        #for reviewer in reviewers:
+        post_comment("Reviewer")
 
 if __name__ == "__main__":
     main()
