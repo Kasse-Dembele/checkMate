@@ -27,5 +27,4 @@ jobs:
       - name: Run PR Checklist Bot
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          python .github/scripts/pr_checkmate_bot.py
+        uses: Kasse-Dembele/checkMate@main

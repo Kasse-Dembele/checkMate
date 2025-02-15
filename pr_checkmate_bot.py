@@ -5,7 +5,7 @@ import requests
 GITHUB_API_URL = "https://api.github.com"
 REPO = os.getenv("GITHUB_REPOSITORY")  # e.g., "owner/repo"
 PR_NUMBER = os.getenv("GITHUB_REF").split("/")[-2]  # Extract PR number from ref
-GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
+GITHUB_TOKEN = os.getenv("INPUT_GITHUB_TOKEN")
 
 # Checklist template
 CHECKLIST = """
